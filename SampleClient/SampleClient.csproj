@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Shared\Ripped\**" />
+    <EmbeddedResource Remove="Shared\Ripped\**" />
+    <None Remove="Shared\Ripped\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\Logger.cs" Link="Shared\Logger.cs" />
+    <Compile Include="..\Shared\ReflectionUtil.cs" Link="Shared\ReflectionUtil.cs" />
+    <Compile Include="..\Shared\SharedConstructs.cs" Link="Shared\SharedConstructs.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BGNet">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\BGNet.dll</HintPath>
+    </Reference>
+    <Reference Include="LiteNetLib">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\LiteNetLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
