@@ -12,6 +12,9 @@ namespace MasterServer
     {
         static void Main(string[] args)
         {
+            //Set logger so we don't crash to unity incompatibility
+            BGNetDebug.SetLogger(new BGNetLogger());
+
             //server.Start("192.168.1.67", "::1", 2328);
             var server = new BeatSaberMasterServer();
 

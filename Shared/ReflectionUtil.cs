@@ -5,13 +5,13 @@ namespace Shared
 {
     public static class ReflectionUtil
     {
-        private const BindingFlags _allBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        public const BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         //Sets the value of a (static?) field in object "obj" with name "fieldName"
         public static void SetField(this object obj, string fieldName, object value, Type overrideType = null)
         {
             (obj is Type ? (Type)obj : (overrideType == null ? obj.GetType() : overrideType))
-                .GetField(fieldName, _allBindingFlags)
+                .GetField(fieldName, AllBindingFlags)
                 .SetValue(obj, value);
         }
 
@@ -19,7 +19,7 @@ namespace Shared
         public static object GetField(this object obj, string fieldName, Type overrideType = null)
         {
             return (obj is Type ? (Type)obj : (overrideType == null ? obj.GetType() : overrideType))
-                .GetField(fieldName, _allBindingFlags)
+                .GetField(fieldName, AllBindingFlags)
                 .GetValue(obj);
         }
 
@@ -30,7 +30,7 @@ namespace Shared
         public static void SetProperty(this object obj, string propertyName, object value, Type overrideType = null)
         {
             (obj is Type ? (Type)obj : (overrideType == null ? obj.GetType() : overrideType))
-                .GetProperty(propertyName, _allBindingFlags)
+                .GetProperty(propertyName, AllBindingFlags)
                 .SetValue(obj, value, null);
         }
 
@@ -38,7 +38,7 @@ namespace Shared
         public static object GetProperty(this object obj, string propertyName, Type overrideType = null)
         {
             return (obj is Type ? (Type)obj : (overrideType == null ? obj.GetType() : overrideType))
-                .GetProperty(propertyName, _allBindingFlags)
+                .GetProperty(propertyName, AllBindingFlags)
                 .GetValue(obj);
         }
 
@@ -46,10 +46,10 @@ namespace Shared
         public static T GetProperty<T>(this object obj, string propertyName) => (T)GetProperty(obj, propertyName);
 
         //Gets the method reference in object "obj" with name "methodName"
-        public static object GetMethod(this object obj, string methodName, Type overrideType = null)
+        public static MethodInfo GetMethod(this object obj, string methodName, Type overrideType = null)
         {
             return (obj is Type ? (Type)obj : (overrideType == null ? obj.GetType() : overrideType))
-                .GetMethod(methodName, _allBindingFlags);
+                .GetMethod(methodName, AllBindingFlags);
         }
 
         //Invokes a (static?) private method with name "methodName" and params "methodParams", returns an object of the specified type
@@ -61,7 +61,7 @@ namespace Shared
         public static object InvokeMethod(this object obj, string methodName, Type overrideType, params object[] methodParams)
         {
             return (obj is Type ? (Type)obj : (overrideType == null ? obj.GetType() : overrideType))
-                .GetMethod(methodName, _allBindingFlags)
+                .GetMethod(methodName, AllBindingFlags)
                 .Invoke(obj, methodParams);
         }
 

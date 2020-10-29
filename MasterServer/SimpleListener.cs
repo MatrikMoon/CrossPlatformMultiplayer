@@ -90,6 +90,8 @@ namespace MasterServer
 
 		void INetEventListener.OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
 		{
+			Console.WriteLine("[Server] ReceiveUnconnected~~~");
+
 			if (NetworkReceiveUnconnectedEvent != null)
 			{
 				NetworkReceiveUnconnectedEvent(remoteEndPoint, reader, messageType);

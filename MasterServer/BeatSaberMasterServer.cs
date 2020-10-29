@@ -37,7 +37,7 @@ namespace MasterServer
 
         public void SendMessage(NetDataWriter writer, IPEndPoint endPoint)
         {
-            throw new NotImplementedException();
+            _netManager.SendUnconnectedMessage(writer, endPoint);
         }
     }
 }
