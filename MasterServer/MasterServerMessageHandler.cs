@@ -21,7 +21,7 @@ namespace MasterServer
 
         protected override bool ShouldHandleUserMessage(IUserMessage packet, MessageOrigin origin)
         {
-            return packet is IUserClientToServerMessage;
+            return true;
         }
 
         protected override bool ShouldHandleHandshakeMessage(IHandshakeMessage packet, MessageOrigin origin)
@@ -57,16 +57,16 @@ namespace MasterServer
         {
             var preMasterSecret = await serverKeys[origin.endPoint].GetPreMasterSecretAsync(packet.clientPublicKey);
 
-            var a = preMasterSecret;
-            var b = serverRandoms[origin.endPoint];
-            var c = clientRandoms[origin.endPoint];
-            var d = serverKeys[origin.endPoint].publicKey;
-            var e = packet.clientPublicKey;
-
             SendReliableResponse(1u, origin.endPoint, packet, ChangeCipherSpecRequest.pool.Obtain());
 
             _encryptionLayer.AddEncryptedEndpoint(1u, origin.endPoint, null, null, preMasterSecret, serverRandoms[origin.endPoint], clientRandoms[origin.endPoint], false);
 
+            packet.Release();
+        }
+
+        protected override void HandleAuthenticateUserRequest(AuthenticateUserRequest packet, MessageOrigin origin)
+        {
+            SendReliableResponse(1u, origin.endPoint, packet, AuthenticateUserResponse.pool.Obtain().Init(AuthenticateUserResponse.Result.Success));
             packet.Release();
         }
     }
