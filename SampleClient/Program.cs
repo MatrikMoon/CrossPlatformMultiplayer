@@ -14,21 +14,29 @@ namespace SampleClient
     {
         static void Main(string[] args)
         {
+            var endpoint = NetUtils.MakeEndPoint("127.0.0.1", 2328);
+            var encryption = new PacketEncryptionLayer();
+            encryption.filterUnencryptedTraffic = true;
+
             EventBasedNetListener listener = new EventBasedNetListener();
-            NetManager client = new NetManager(listener, new PacketEncryptionLayer())
+            NetManager client = new NetManager(listener, encryption)
             {
                 UnconnectedMessagesEnabled = true
             };
 
             client.Start();
-
-            client.SendUnconnectedMessage(NetDataWriter.FromString("test"), NetUtils.MakeEndPoint("server1.networkauditor.org", 2328));
-
-            listener.NetworkReceiveEvent += (fromPeer, dataReader, deliveryMethod) =>
+            listener.NetworkReceiveUnconnectedEvent += (fromPeer, dataReader, deliveryMethod) =>
             {
-                Console.WriteLine("We got: {0}", dataReader.GetString(100));
-                dataReader.Recycle();
+                Console.WriteLine($"Recieved: {dataReader.GetString(100)}");
             };
+
+            client.SendUnconnectedMessage(NetDataWriter.FromString("test"), endpoint);
+
+            Thread.Sleep(1000);
+
+            encryption.AddEncryptedEndpoint(1u, endpoint, null, null, CreateSpecialByteArray(48, 0x1), CreateSpecialByteArray(32, 0x2), CreateSpecialByteArray(32, 0x3), true);
+
+            client.SendUnconnectedMessage(NetDataWriter.FromString("test2"), endpoint);
 
             while (!Console.KeyAvailable)
             {
@@ -37,6 +45,24 @@ namespace SampleClient
             }
 
             client.Stop();
+        }
+
+        public static byte[] CreateSpecialByteArray(int length, byte fill)
+        {
+            var arr = new byte[length];
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = fill;
+            }
+            return arr;
+        }
+
+        private static byte[] CreateHandshakeHeader()
+        {
+            byte[] array = new byte[5];
+            array[0] = 8;
+            FastBitConverter.GetBytes(array, 1, 3192347326u);
+            return array;
         }
     }
 }

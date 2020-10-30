@@ -44,7 +44,7 @@ namespace MasterServer.HarmonyPatches
     {
         [HarmonyPatch("RegisterHandshakeMessageHandlers")]
         [HarmonyPatch(new Type[] { })]
-        static bool Prefix(BaseClientMessageHandler __instance)
+        static bool Prefix()
         {
             Logger.Debug("Patched MessageHandler RegisterHandshakeCallbacks!");
             return false;

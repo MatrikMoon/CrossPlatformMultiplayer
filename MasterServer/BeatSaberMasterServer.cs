@@ -1,11 +1,10 @@
 ﻿using LiteNetLib;
 using LiteNetLib.Utils;
-using System;
 using System.Net;
 
 namespace MasterServer
 {
-    class BeatSaberMasterServer : MessageHandler.IMessageSender
+    class BeatSaberMasterServer : MasterServerMessageHandler.IMessageSender
     {
         NetManager _netManager;
         SimpleListener _listener;

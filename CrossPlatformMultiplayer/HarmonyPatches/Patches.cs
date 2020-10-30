@@ -46,7 +46,7 @@ namespace CrossPlatformMultiplayer.HarmonyPatches
         [HarmonyPatch(new Type[] { typeof(MasterServerEndPoint) })]
         static void Postfix(NetworkConfigSO __instance, ref MasterServerEndPoint __result)
         {
-            __result = new MasterServerEndPoint("server1.networkauditor.org", 2328);
+            __result = new MasterServerEndPoint("127.0.0.1", 2328);
             Logger.Debug("Patched master server endpoint!");
         }
     }
@@ -63,4 +63,17 @@ namespace CrossPlatformMultiplayer.HarmonyPatches
             return false;
         }
     }
+
+    /*[HarmonyPatch(typeof(MultiplayerUnavailableReasonMethods))]
+    public class MultiplayerUnavailableReasonMethodsPatch
+    {
+        [HarmonyPatch("TryGetMultiplayerUnavailableReason")]
+        [HarmonyPatch(new[] { typeof(MasterServerAvailabilityData), typeof(MultiplayerUnavailableReason) })]
+        static bool Prefix(ref bool __result)
+        {
+            __result = false;
+            Logger.Debug("Patched server availability checker!");
+            return false;
+        }
+    }*/
 }
