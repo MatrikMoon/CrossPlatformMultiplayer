@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -103,10 +105,14 @@ namespace MasterServer
         }
         #endregion HEARTBEAT
 
-        #region SERVER CREATION
+        #region SERVER CREATION / DELETION
         protected override void HandleBroadcastServerStatusRequest(BroadcastServerStatusRequest packet, MessageOrigin origin)
         {
-            serverList["FLEE"] = new ServerStatus
+            //I'm assuming this only happens on server creation, and that this packet doesn't
+            //also get sent on updating any sort of server status. Under that assumption, this should be fine.
+            var code = RandomString(5);
+
+            serverList[code] = new ServerStatus
             {
                 Username = packet.userName,
                 UserId = packet.userId,
@@ -124,11 +130,27 @@ namespace MasterServer
                 EndPoint = origin.endPoint
             };
 
-            SendReliableResponse(1u, origin.endPoint, packet, BroadcastServerStatusResponse.pool.Obtain().InitForSuccess(origin.endPoint, "FLEE"));
+            SendReliableResponse(1u, origin.endPoint, packet, BroadcastServerStatusResponse.pool.Obtain().InitForSuccess(origin.endPoint, code));
 
             packet.Release();
         }
-        #endregion SERVER CREATION
+
+        protected override void HandleBroadcastServerRemoveRequest(BroadcastServerRemoveRequest packet, MessageOrigin origin)
+        {
+            //TODO: Time complexity please.
+            serverList.Remove(serverList.First(x => x.Value.Secret == packet.secret).Key);
+
+            packet.Release();
+        }
+
+        private static Random random = new Random();
+        public static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+        #endregion SERVER CREATION / DELETION
 
         #region SERVER JOIN BY CODE
         protected override void HandleConnectToServerRequest(ConnectToServerRequest packet, MessageOrigin origin)
