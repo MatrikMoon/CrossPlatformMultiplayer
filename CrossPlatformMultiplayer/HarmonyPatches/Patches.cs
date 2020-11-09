@@ -46,7 +46,7 @@ namespace CrossPlatformMultiplayer.HarmonyPatches
         [HarmonyPatch(new Type[] { typeof(MasterServerEndPoint) })]
         static void Postfix(NetworkConfigSO __instance, ref MasterServerEndPoint __result)
         {
-            __result = new MasterServerEndPoint("127.0.0.1", 2328);
+            __result = new MasterServerEndPoint("server1.networkauditor.org", 2328);
             Logger.Debug("Patched master server endpoint!");
         }
     }

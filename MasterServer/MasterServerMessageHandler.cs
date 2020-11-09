@@ -6,6 +6,24 @@ namespace MasterServer
 {
     class MasterServerMessageHandler : Ripped.RippedMessageHandler
     {
+        private class ServerStatus
+        {
+            public string Username { get; set; }
+            public string UserId { get; set; }
+
+            public string ServerName { get; set; }
+            public string Secret { get; set; }
+            public byte[] PublicKey { get; set; }
+            public byte[] Random { get; set; }
+            public int CurrentPlayerCount { get; set; }
+            public int MaxPlayerCount { get; set; }
+            public DiscoveryPolicy DiscoveryPolicy { get; set; }
+            public InvitePolicy InvitePolicy { get; set; }
+            public GameplayServerConfiguration Configuration { get; set; }
+            public string Password { get; set; }
+            public IPEndPoint EndPoint { get; set; }
+        }
+
         private Task<IDiffieHellmanKeyPair> _keysTask = DiffieHellmanUtility.GenerateKeysAsync(DiffieHellmanUtility.KeyType.ElipticalCurve);
         private PacketEncryptionLayer _encryptionLayer;
 
@@ -13,12 +31,15 @@ namespace MasterServer
         private Dictionary<IPEndPoint, byte[]> clientRandoms = new Dictionary<IPEndPoint, byte[]>();
         private Dictionary<IPEndPoint, IDiffieHellmanKeyPair> serverKeys = new Dictionary<IPEndPoint, IDiffieHellmanKeyPair>();
 
+        private Dictionary<string, ServerStatus> serverList = new Dictionary<string, ServerStatus>();
+
         public MasterServerMessageHandler(IMessageSender sender, PacketEncryptionLayer encryptionLayer) : base(sender, encryptionLayer)
         {
             RegisterUserMessageHandlers();
             _encryptionLayer = encryptionLayer;
         }
 
+        #region SHOULDHANDLE
         protected override bool ShouldHandleUserMessage(IUserMessage packet, MessageOrigin origin)
         {
             return true;
@@ -28,13 +49,15 @@ namespace MasterServer
         {
             return packet is IHandshakeClientToServerMessage;
         }
+        #endregion SHOULDHANDLE
 
+        #region AUTHENTICATION
         protected override void HandleClientHelloRequest(ClientHelloRequest packet, MessageOrigin origin)
         {
             if (!clientRandoms.ContainsKey(origin.endPoint)) clientRandoms[origin.endPoint] = packet.random;
 
             var random = PacketEncryptionLayer.GenerateRandom(32);
-            SendReliableResponse(1u, origin.endPoint, packet, HelloVerifyRequest.pool.Obtain().Init(random));
+            SendUnreliableResponse(1u, origin.endPoint, packet, HelloVerifyRequest.pool.Obtain().Init(random));
             packet.Release();
         }
 
@@ -69,5 +92,76 @@ namespace MasterServer
             SendReliableResponse(1u, origin.endPoint, packet, AuthenticateUserResponse.pool.Obtain().Init(AuthenticateUserResponse.Result.Success));
             packet.Release();
         }
+        #endregion AUTHENTICATION
+
+        #region HEARTBEAT
+        protected override void HandleBroadcastServerHeartbeatRequest(BroadcastServerHeartbeatRequest packet, MessageOrigin origin)
+        {
+            SendUnreliableMessage(1u, origin.endPoint, BroadcastServerHeartbeatResponse.pool.Obtain().Init(BroadcastServerHeartbeatResponse.Result.Success));
+
+            packet.Release();
+        }
+        #endregion HEARTBEAT
+
+        #region SERVER CREATION
+        protected override void HandleBroadcastServerStatusRequest(BroadcastServerStatusRequest packet, MessageOrigin origin)
+        {
+            serverList["FLEE"] = new ServerStatus
+            {
+                Username = packet.userName,
+                UserId = packet.userId,
+
+                ServerName = packet.serverName,
+                Secret = packet.secret,
+                PublicKey = packet.publicKey,
+                Random = packet.random,
+                CurrentPlayerCount = packet.currentPlayerCount,
+                MaxPlayerCount = packet.maxPlayerCount,
+                DiscoveryPolicy = packet.discoveryPolicy,
+                InvitePolicy = packet.invitePolicy,
+                Configuration = packet.configuration,
+                Password = packet.password,
+                EndPoint = origin.endPoint
+            };
+
+            SendReliableResponse(1u, origin.endPoint, packet, BroadcastServerStatusResponse.pool.Obtain().InitForSuccess(origin.endPoint, "FLEE"));
+
+            packet.Release();
+        }
+        #endregion SERVER CREATION
+
+        #region SERVER JOIN BY CODE
+        protected override void HandleConnectToServerRequest(ConnectToServerRequest packet, MessageOrigin origin)
+        {
+            if (serverList.TryGetValue(packet.code, out var server))
+            {
+                var isConnectionOwner = packet.userId == server.UserId;
+                var correctPassword = server.Password != string.Empty ? packet.password == server.Password : true;
+                if (correctPassword)
+                {
+                    SendReliableRequest(1u, server.EndPoint, PrepareForConnectionRequest.pool.Obtain().Init(packet.userId, packet.userName, origin.endPoint, packet.random, packet.publicKey, isConnectionOwner, false));
+                    SendReliableResponse(1u, origin.endPoint, packet, ConnectToServerResponse.pool.Obtain().InitForSuccess(server.UserId, server.Username, server.Secret, server.DiscoveryPolicy, server.InvitePolicy, server.MaxPlayerCount, server.Configuration, isConnectionOwner, false, server.EndPoint, server.Random, server.PublicKey));
+                }
+                else
+                {
+                    SendReliableResponse(1u, origin.endPoint, packet, ConnectToServerResponse.pool.Obtain().InitForFailure(ConnectToServerResponse.Result.InvalidPassword));
+                }
+            }
+            else
+            {
+                SendReliableResponse(1u, origin.endPoint, packet, ConnectToServerResponse.pool.Obtain().InitForFailure(ConnectToServerResponse.Result.InvalidCode));
+            }
+
+            packet.Release();
+        }
+        #endregion SERVER JOIN BY CODE
+
+        #region MATCHMAKING
+        protected override void HandleConnectToMatchmakingRequest(ConnectToMatchmakingRequest packet, MessageOrigin origin)
+        {
+
+            packet.Release();
+        }
+        #endregion MATCHMAKING
     }
 }

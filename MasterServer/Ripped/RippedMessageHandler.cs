@@ -711,7 +711,6 @@ namespace MasterServer.Ripped
 			}
 			try
 			{
-				Logger.Debug($"Reading message type: {messageType} ({protocolVersion})");
 				INetworkPacketSerializer<MessageOrigin> serializer = GetSerializer(protocolVersion, messageType);
 				MessageOrigin data = new MessageOrigin(remoteEndPoint, protocolVersion);
 				serializer.ProcessAllPackets(reader, data);

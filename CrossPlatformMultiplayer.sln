@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossPlatformMultiplayer", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MasterServer", "MasterServer\MasterServer.csproj", "{9EC7B139-9CD3-4343-9958-E04E80231B91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleClient", "SampleClient\SampleClient.csproj", "{99D30C06-8F72-4E33-8152-6A555C087DBB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{9EC7B139-9CD3-4343-9958-E04E80231B91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EC7B139-9CD3-4343-9958-E04E80231B91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EC7B139-9CD3-4343-9958-E04E80231B91}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99D30C06-8F72-4E33-8152-6A555C087DBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99D30C06-8F72-4E33-8152-6A555C087DBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99D30C06-8F72-4E33-8152-6A555C087DBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99D30C06-8F72-4E33-8152-6A555C087DBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
